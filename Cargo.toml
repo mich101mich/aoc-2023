@@ -1,0 +1,17 @@
+[package]
+name = "aoc-2023"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rayon = "1.6.0"
+rand = "0.8.5"
+regex = "1.7.0"
+sscanf = { git = "https://www.github.com/mich101mich/sscanf", branch = "dev" }
+permutohedron = "0.2.4"
+num = "0.4.0"
+nom = "7.1.1"
+cgmath = "0.18.0"
+
