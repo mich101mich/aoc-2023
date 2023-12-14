@@ -3,9 +3,9 @@
 #[macro_use]
 mod utils;
 mod days {
-    pub mod day_13;
+    pub mod day_14;
 }
 
 fn main() {
-    days::day_13::run();
+    days::day_14::run();
 }
