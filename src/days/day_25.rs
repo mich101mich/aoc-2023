@@ -3,7 +3,6 @@ use std::cmp::Reverse;
 use crate::utils::*;
 
 /// An undirected weighted graph
-#[derive(Clone)]
 struct Graph {
     edges: Vec<Vec<u32>>,
     nodes: Vec<usize>,
@@ -40,6 +39,7 @@ impl Graph {
         self.edges.swap(a, b);
         self.edges.iter_mut().for_each(|e| e.swap(a, b));
     }
+
     fn merge_nodes(&mut self, a: usize, b: usize) {
         assert_ne!(a, b);
         self.nodes[a] += self.nodes[b];
@@ -55,12 +55,6 @@ impl Graph {
         self.edges.iter_mut().for_each(|e| {
             e.pop();
         });
-    }
-}
-impl std::ops::Index<(usize, usize)> for Graph {
-    type Output = u32;
-    fn index(&self, edge: (usize, usize)) -> &Self::Output {
-        &self.edges[edge.0][edge.1]
     }
 }
 
@@ -94,30 +88,42 @@ pub fn run() {
         }
     }
 
+    let mut combined = vec![false; n];
+    let mut combined_weights = vec![0; n];
+    let mut queue = BinaryHeap::new(); // (weight, node). Maximized by weight
     while graph.num_nodes() > 2 {
-        for selected in 0..graph.num_nodes() {
-            // move selected to the front
-            graph.swap_nodes(0, selected);
+        let mut num_remaining = graph.num_nodes();
+        combined.fill(false);
+        combined_weights.fill(0);
+        queue.clear();
+        queue.push((0u32, 0usize));
+        let combine_target = loop {
+            let (_, next) = queue.pop().unwrap();
+            if combined[next] {
+                continue; // already processed
+            }
+            combined[next] = true;
+            num_remaining -= 1;
+            if num_remaining == 1 {
+                break next;
+            }
+            for (other, w) in graph.edges_of(next).filter(|(o, _)| !combined[*o]) {
+                combined_weights[other] += w;
+                queue.push((combined_weights[other], other));
+            }
+        };
 
-            let mut g = graph.clone();
-            let mut original_index = (0..g.num_nodes()).to_vec();
-            let mut last_merged = g.num_nodes();
-            while g.num_nodes() > 2 {
-                let (next, w) = g.edges_of(0).max_by_key(|(_, w)| *w).unwrap();
-                g.merge_nodes(0, next);
-                last_merged = original_index.swap_remove(next);
-            }
-            let cost = g[(0, 1)];
-            let s = last_merged;
-            let t = original_index[1];
-            if cost == 3 {
-                // critical edge, has to stay
-                continue;
-            }
-            graph.merge_nodes(s, t);
+        let last = combined.iter().position(|&c| !c).unwrap();
+        let cost = graph.edges_of(last).map(|(_, w)| w).sum::<u32>();
+        if cost == 3 {
+            let a = graph.nodes[last];
+            let b = n - a;
+            let result = a * b;
+            pv!(result);
             break;
         }
+        graph.merge_nodes(combine_target, last);
+        combined.pop();
+        combined_weights.pop();
     }
-    let result = graph.nodes[0] * graph.nodes[1];
-    pv!(result);
 }
