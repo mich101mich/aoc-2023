@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 rayon = "1.6.0"
-rand = "0.8.5"
+rand = { version = "0.8.5", features = ["small_rng", "alloc"] }
 regex = "1.7.0"
 sscanf = { git = "https://www.github.com/mich101mich/sscanf", branch = "dev" }
 permutohedron = "0.2.4"
